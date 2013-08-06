@@ -32,7 +32,7 @@
 
 
 /************************************************************
-*服务器端口定义
+*WAI\u8ba4\u8bc1\u534f\u8bae\u76f8\u5173\u7684\u8ba4\u8bc1\u6fc0\u6d3b\u5206\u7ec4\u3001\u63a5\u5165\u8ba4\u8bc1\u8bf7\u6c42\u5206\u7ec4\u3001\u8bc1\u4e66\u8ba4\u8bc1\u8bf7\u6c42\u5206\u7ec4\u3001\u8bc1\u4e66\u8ba4\u8bc1\u54cd\u5e94\u5206\u7ec4\u3001\u63a5\u5165\u8ba4\u8bc1\u54cd\u5e94\u5206\u7ec4
 *************************************************************/
 #define CHAT_SERVER_PORT    (1111)
 
@@ -87,6 +87,11 @@ typedef unsigned long  DWORD;
 #define BOOL int
 #define TRUE 1
 #define FALSE 0
+
+#define AE_OK_ASUE_OK 2     //AE\u548cASUE\u8bc1\u4e66\u9a8c\u8bc1\u90fd\u6b63\u786e
+#define AE_OK_ASUE_ERROR 3  //AE\u8bc1\u4e66\u9a8c\u8bc1\u6b63\u786e\uff0cASUE\u8bc1\u4e66\u9a8c\u8bc1\u9519\u8bef
+#define AE_ERROR_ASUE_OK 4  //AE\u8bc1\u4e66\u9a8c\u8bc1\u9519\u8bef\uff0cASUE\u8bc1\u4e66\u9a8c\u8bc1\u6b63\u786e
+#define AE_ERROR_ASUE_ERROR 5  //AE\u8bc1\u4e66\u9a8c\u8bc1\u9519\u8bef\uff0cASUE\u8bc1\u4e66\u9a8c\u8bc1\u9519\u8bef
 
 typedef struct _byte_data 
 {

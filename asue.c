@@ -588,7 +588,10 @@ int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet)
 	BYTE deraepubkey[1024];
 	int aepubkeyLen, i;
 	aepubKey = getpubkeyfromcert(ae_ID);
-
+	if(aepubKey == NULL){
+		printf("get ae's public key failed.\n");
+		return FALSE;
+		}
 	pTmp = deraepubkey;
 	//把证书公钥转换为DER编码的数据，以方便打印(aepubkey结构体不方便打印)
 	aepubkeyLen = i2d_PublicKey(aepubKey, &pTmp);
@@ -822,6 +825,10 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_
 	int aepubkeyLen, i;
 	int ae_ID = 2;
 	aepubKey = getpubkeyfromcert(ae_ID);
+	if(aepubKey == NULL){
+		printf("get ae's public key failed.\n");
+		return FALSE;
+		}
 
 	pTmp = deraepubkey;
 	//把证书公钥转换为DER编码的数据，以方便打印(aepubkey结构体不方便打印)

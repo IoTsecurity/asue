@@ -906,18 +906,6 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_
 		EVP_PKEY_free(asupubKey);
 	}else{
 		printf("asu's sign verify failed.\n");
-
-		int i;
-		printf("length=%d\n",access_auth_resp_packet->cervalrescomplex.ae_asue_cert_valid_result_asu_sign.sign.length);
-		for (i = 0; i < access_auth_resp_packet->cervalrescomplex.ae_asue_cert_valid_result_asu_sign.sign.length; i++)
-		{
-			if (i % 16 == 0)
-				printf("\n%08xH: ", i);
-			printf("%02x ", access_auth_resp_packet->cervalrescomplex.ae_asue_cert_valid_result_asu_sign.sign.data[i]);
-		}
-		printf("\n");
-
-		
 		return FALSE;
 		}
 
@@ -936,49 +924,43 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_
 void ProcessWAPIProtocol(int new_ae_socket)
 {
 	int user_ID = 1;
-
-	EAP_auth_active eap_auth_active_packet;
-	EAP_access_auth_requ eap_access_auth_requ_packet;
-	EAP_access_auth_resp eap_access_auth_resp_packet;
+	auth_active auth_active_packet;
+	access_auth_requ access_auth_requ_packet;
+	access_auth_resp access_auth_resp_packet;
 
 	printf("\n***\n Connect to ae.\n");
 	
-	//1) ProcessWAPIProtocolAuthActive, recv from ae
+	//1) ProcessWAPIProtocolAuthActive
 	printf("\n***\n 1) HandleWAPIProtocolAuthActive: \n");
 	
-	memset((BYTE *)&eap_auth_active_packet, 0, sizeof(EAP_auth_active));
+	memset((BYTE *)&auth_active_packet, 0, sizeof(auth_active));
 	printf("recv auth active packet from AE...\n");
-	recv_from_ae(new_ae_socket, (BYTE *)&eap_auth_active_packet, sizeof(eap_auth_active_packet));
-	HandleWAPIProtocolAuthActive(user_ID, &eap_auth_active_packet.auth_active_packet);
+	recv_from_ae(new_ae_socket, (BYTE *)&auth_active_packet, sizeof(auth_active_packet));
 	
-	//2) ProcessWAPIProtocolAccessAuthRequest, send to ae
+	HandleWAPIProtocolAuthActive(user_ID, &auth_active_packet);
+	
+	//2) ProcessWAPIProtocolAccessAuthRequest
 	printf("\n***\n 2) ProcessWAPIProtocolAccessAuthRequest: \n");
 	//stop for keyboard
-	//getchar();
-
-	memset((BYTE *)&eap_access_auth_requ_packet, 0, sizeof(eap_access_auth_requ_packet));
-	eap_access_auth_requ_packet.eap_header.code=1;
-	eap_access_auth_requ_packet.eap_header.identifier=1;
-	eap_access_auth_requ_packet.eap_header.length=sizeof(eap_access_auth_requ_packet);
-	eap_access_auth_requ_packet.eap_header.type=192;
-	ProcessWAPIProtocolAccessAuthRequest(user_ID,&eap_auth_active_packet.auth_active_packet, &eap_access_auth_requ_packet.access_auth_requ_packet);
+	getchar();
+	ProcessWAPIProtocolAccessAuthRequest(user_ID,&auth_active_packet, &access_auth_requ_packet);
 
 	printf("send to ae...\n");
-	send_to_ae(new_ae_socket, (BYTE *)&eap_access_auth_requ_packet, sizeof(eap_access_auth_requ_packet));
+	send_to_ae(new_ae_socket, (BYTE *)&access_auth_requ_packet, sizeof(access_auth_requ_packet));
 	
 	//3) ProcessWAPIProtocolCertAuthRequest
 	//printf("3) ProcessWAPIProtocolCertAuthRequest: \n");
 	//4) ProcessWAPIProtocolCertAuthResp
 	//printf("4) ProcessWAPIProtocolCertAuthResp: \n");
 
-	//5) ProcessWAPIProtocolAccessAuthResp, recv from ae
+	//5) ProcessWAPIProtocolAccessAuthResp
 	printf("\n***\n 5) HandleWAPIProtocolAccessAuthResp: \n");
 
-	memset((BYTE *)&eap_access_auth_resp_packet, 0, sizeof(EAP_access_auth_resp));
+	memset((BYTE *)&access_auth_resp_packet, 0, sizeof(access_auth_resp));
 	printf("recv from ae...\n");
-	recv_from_ae(new_ae_socket, (BYTE *)&eap_access_auth_resp_packet, sizeof(eap_access_auth_resp_packet));
+	recv_from_ae(new_ae_socket, (BYTE *)&access_auth_resp_packet, sizeof(access_auth_resp_packet));
 
-	if(HandleWAPIProtocolAccessAuthResp(user_ID, &eap_access_auth_requ_packet.access_auth_requ_packet, &eap_access_auth_resp_packet.access_auth_resp_packet) == FALSE){
+	if(HandleWAPIProtocolAccessAuthResp(user_ID, &access_auth_requ_packet, &access_auth_resp_packet) == FALSE){
 		printf("Authentication failed!!\n");
 		exit(1);
 	}else{

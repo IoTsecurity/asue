@@ -328,4 +328,95 @@ typedef struct _EAP_access_auth_resp
 }EAP_access_auth_resp;
 
 
+
+BOOL getCertData(int userID, BYTE buf[], int *len);
+
+BOOL writeCertFile(int userID, BYTE buf[], int len);
+/*************************************************
+
+Function:    // getpubkeyfromcert
+Description: // 从数字证书(PEM文件)中读取公钥
+Calls:       // openssl中读PEM文件的API
+Called By:   // fill_certificate_auth_resp_packet
+Input:	     //	用户证书的用户名certnum
+Output:      //	数字证书公钥
+Return:      // EVP_PKEY *pubKey
+Others:      // 用户证书的用户名certnum最好是用字符串形式，但是目前是int值，有待改进
+
+*************************************************/
+EVP_PKEY *getpubkeyfromcert(int certnum);
+
+BOOL gen_sign(int user_ID, BYTE * input,int inputLength,BYTE * sign_value, unsigned int *sign_len,EVP_PKEY * privKey);
+
+/*************************************************
+
+Function:    // verify_sign
+Description: // 验证数字签名
+Calls:       // openssl验证签名的API
+Called By:   // fill_certificate_auth_resp_packet
+Input:	     //	input---待验证签名的整个数据包
+                sign_input_len---待验证签名的有效数据字段的长度，并非整个input长度
+                sign_value---签名字段
+                sign_output_len---签名字段的长度
+                pubKey---验证签名所使用的公钥
+Output:      //	验证签名结果，TRUE or FALSE
+Return:      // TRUE or FALSE
+Others:      // 注意sign_input_len字段并非整个input长度，这一点今后如果感觉不合适再修改
+
+*************************************************/
+
+BOOL verify_sign(BYTE *input,int sign_input_len,BYTE * sign_value, unsigned int sign_output_len,EVP_PKEY * pubKey);
+
+/*************************************************
+
+Function:    // gen_randnum
+Description: // 生成随机数
+Calls:       // openssl SHA256的API函数以及RAND_bytes函数
+Called By:   // 待添加！！！
+Input:	     //	randnum---保存生成的随机数
+                randnum_len---随机数长度
+Output:      //	随机数
+Return:      // 256bit(32Byte)MAC
+Others:      //
+
+*************************************************/
+void gen_randnum(BYTE *randnum,int randnum_len);
+
+
+EVP_PKEY * getprivkeyfromprivkeyfile(int userID);
+
+
+int getECDHparam(ecdh_param *ecdhparam, const char *oid);
+
+int getLocalIdentity(identity *localIdentity, int localUserID);
+
+int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buffer_recv);
+
+
+//1) ProcessWAPIProtocolAuthActive
+int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet);
+
+
+//2) ProcessWAPIProtocolAccessAuthRequest
+int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+
+int ProcessWAPIProtocolAccessAuthRequest(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+
+
+//3)
+//int ProcessWAPIProtocolCertAuthRequest()
+
+//4)
+//int ProcessWAPIProtocolCertAuthResp()
+
+
+//5 ProcessWAPIProtocolAccessAuthResp
+int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_requ_packet,access_auth_resp *access_auth_resp_packet);
+
+
+
+
+
+
+
 #endif /* ASUE_H_ */

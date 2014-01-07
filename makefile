@@ -11,14 +11,14 @@ all: $(EXE)
 # Add inputs and outputs from these tool invocations to the build variables 
 LIB_DIR := -L/usr/local/openssl/lib
 LIBS := -lssl -lcrypto
-OBJS := ./asue.o
+OBJS := ./asue.o ./asue_interfaces.o
 USER_OBJS := 
 
 # Tool invocations
 $(EXE): $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	$(C_COMPILER) -ldl $(LIB_DIR) $(LIBS) -o $@ $< $(USER_OBJS) 
+	$(C_COMPILER) -ldl $(LIB_DIR) $(LIBS) -o $@ $^ $(USER_OBJS) 
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -392,14 +392,15 @@ int getLocalIdentity(identity *localIdentity, int localUserID);
 
 int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buffer_recv);
 
+int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+
+
 
 //1) ProcessWAPIProtocolAuthActive
 int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet);
 
 
 //2) ProcessWAPIProtocolAccessAuthRequest
-int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
-
 int ProcessWAPIProtocolAccessAuthRequest(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
 
 

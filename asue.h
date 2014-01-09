@@ -84,9 +84,9 @@
 typedef unsigned char  BYTE;
 typedef unsigned short WORD;
 typedef unsigned long  DWORD;
+typedef unsigned short BOOL;
 
 //宏定义布尔类型
-#define BOOL int
 #define TRUE 1
 #define FALSE 0
 
@@ -392,32 +392,36 @@ int getLocalIdentity(identity *localIdentity, int localUserID);
 
 int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buffer_recv);
 
-int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+
+/* Authentication */
+// 1) Handle AuthActive packet
+int HandleWAPIProtocolAuthActive(int user_ID, const auth_active *auth_active_packet);
+
+// 2) Process AccessAuthRequest packet
+int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
 
 
-
-//1) ProcessWAPIProtocolAuthActive
-int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet);
-
-
-//2) ProcessWAPIProtocolAccessAuthRequest
-int ProcessWAPIProtocolAccessAuthRequest(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
-
-
-//3)
+//3) CertAuthRequest packet sended from ae to asu, asue need do nothing
 //int ProcessWAPIProtocolCertAuthRequest()
 
-//4)
+//4) CertAuthResp packet sended from asu to ae, asue need do nothing
 //int ProcessWAPIProtocolCertAuthResp()
 
+// 5) Handle AccessAuthResp packet
+int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access_auth_requ_packet,const access_auth_resp *access_auth_resp_packet);
 
-//5 ProcessWAPIProtocolAccessAuthResp
-int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_requ_packet,access_auth_resp *access_auth_resp_packet);
+/* Key negotiation */
+/*
+// 1) Handle Unicast key negotiation request packet
+int HandleUnicastKeyNegoRequest(const unicast_key_nego_requ *unicast_key_nego_requ_packet);
 
+// 2) Process Unicast key negotiation response packet
+int ProcessUnicastKeyNegoResponse(unicast_key_nego_resp *unicast_key_nego_resp_packet);
 
-
-
-
+// 3) Handle Unicast key negotiation confirm packet
+int HandleUnicastKeyNegoConfirm(const unicast_key_nego_confirm *unicast_key_nego_confirm_packet);
+*/
 
 
 #endif /* ASUE_H_ */

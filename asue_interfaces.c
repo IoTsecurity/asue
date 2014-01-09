@@ -390,96 +390,9 @@ int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buff
 	return TRUE;
 }
 
-//1) ProcessWAPIProtocolAuthActive
-/*
-int fill_auth_active_packet(int user_ID,auth_active *auth_active_packet)
-{
-	//fill WAI packet head
-	auth_active_packet->wai_packet_head.version = 1;
-	auth_active_packet->wai_packet_head.type = 1;
-	auth_active_packet->wai_packet_head.subtype = AUTH_ACTIVE;
-	auth_active_packet->wai_packet_head.reserved = 0;
-	auth_active_packet->wai_packet_head.packetnumber = 1;
-	auth_active_packet->wai_packet_head.fragmentnumber = 0;
-	auth_active_packet->wai_packet_head.identify = 0;
-
-	//fill flag
-	auth_active_packet->flag = 0x00;
-
-	//fill auth identify
-	memset((BYTE *)&auth_active_packet->authidentify, 0, sizeof(auth_active_packet->authidentify));
-
-	//fill ae rand number
-	memset((BYTE *)&auth_active_packet->aechallenge, 0, sizeof(auth_active_packet->aechallenge));
-
-	//fill local ASU identity
-	getLocalIdentity(&auth_active_packet->localasuidentity, user_ID);
-
-	//fill ecdh param
-	const  char  oid[]={"1.2.156.11235.1.1.2.1"}; 
-	
-	getECDHparam(&auth_active_packet->ecdhparam, oid);
-	
-	//fill ae certificate
-	auth_active_packet->certificatestaae.cer_identify = 1; //X.509 cert
-	
-	BYTE cert_buffer[5000];
-	int cert_len = 0;
-
-	if (!getCertData(user_ID, cert_buffer, &cert_len))    //先读取ASUE证书，"demoCA/newcerts/usercert2.pem"
-	{
-		printf("将证书保存到缓存buffer失败!");
-		return FALSE;
-	}
-	
-	auth_active_packet->certificatestaae.cer_length = cert_len;   //证书长度字段
-	memcpy((auth_active_packet->certificatestaae.cer_X509),(BYTE*)cert_buffer,strlen((char*)cert_buffer));
-
-	//fill packet length
-	auth_active_packet->wai_packet_head.length = sizeof(auth_active);	
-
-	//fill ae signature
-	//AE\u4f7f\u7528AE\u7684\u79c1\u94a5(userkey2.pem)\u6765\u751f\u6210AE\u7b7e\u540d
-	EVP_PKEY * privKey;
-	BYTE sign_value[1024];					//保存签名值的数组
-	unsigned int  sign_len;
-
-	privKey = getprivkeyfromprivkeyfile(user_ID);
-	if(privKey == NULL)
-	{
-		printf("getprivkeyitsself().....failed!\n");
-		return FALSE;
-	}
-
-	if(!gen_sign(user_ID, (BYTE *)auth_active_packet,(auth_active_packet->wai_packet_head.length-sizeof(auth_active_packet->aesign)),sign_value, &sign_len,privKey))
-	{
-		printf("generate signature failed.\n");
-		return FALSE;
-	}
-	
-	auth_active_packet->aesign.sign.length = sign_len;
-	memcpy(auth_active_packet->aesign.sign.data,sign_value,sign_len);
-
-	return TRUE;
-	
-}
-
-
-
-int ProcessWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet)
-{
-
-	memset((BYTE *)auth_active_packet, 0, sizeof(auth_active));
-	if (!fill_auth_active_packet(user_ID, auth_active_packet)){
-		printf("fill auth active packet failed!\n");
-		return FALSE;
-	}
-
-	return TRUE;
-	
-}
-*/
-int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet)
+/* Authentication */
+// 1) Handle AuthActive packet
+int HandleWAPIProtocolAuthActive(int user_ID, const auth_active *auth_active_packet)
 {
 	//write ae cert into cert file
 	printf("write ae cert into cert file:\n");
@@ -529,9 +442,8 @@ int HandleWAPIProtocolAuthActive(int user_ID, auth_active *auth_active_packet)
 	return TRUE;
 }
 
-
-//2) ProcessWAPIProtocolAccessAuthRequest
-int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
+// 2) Process AccessAuthRequest packet
+int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
 {
 	//fill WAI packet head
 	printf("fill WAI packet head:\n");
@@ -621,7 +533,7 @@ int fill_access_auth_requ_packet(int user_ID,auth_active *auth_active_packet, ac
 	
 }
 
-int ProcessWAPIProtocolAccessAuthRequest(int user_ID,auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
+int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
 {
 	memset((BYTE *)access_auth_requ_packet, 0, sizeof(access_auth_requ));
 	if (!fill_access_auth_requ_packet(user_ID,auth_active_packet, access_auth_requ_packet)){
@@ -631,90 +543,14 @@ int ProcessWAPIProtocolAccessAuthRequest(int user_ID,auth_active *auth_active_pa
 	return TRUE;
 }
 
-
-//3)
+//3) CertAuthRequest packet sended from ae to asu, asue need do nothing
 //int ProcessWAPIProtocolCertAuthRequest()
 
-//4)
+//4) CertAuthResp packet sended from asu to ae, asue need do nothing
 //int ProcessWAPIProtocolCertAuthResp()
 
-
-//5 ProcessWAPIProtocolAccessAuthResp
-/*
-int fill_access_auth_resp_packet(int user_ID, access_auth_resp *access_auth_resp_packet)
-{
-	
-	//fill WAI packet head
-	access_auth_resp_packet->wai_packet_head.version = 1;
-	access_auth_resp_packet->wai_packet_head.type = 1;
-	access_auth_resp_packet->wai_packet_head.subtype = ACCESS_AUTH_RESP;
-	access_auth_resp_packet->wai_packet_head.reserved = 0;
-	access_auth_resp_packet->wai_packet_head.packetnumber = 1;
-	access_auth_resp_packet->wai_packet_head.fragmentnumber = 0;
-	access_auth_resp_packet->wai_packet_head.identify = 0;
-
-	//fill flag
-	access_auth_resp_packet->flag = 0x04;
-
-	//fill auth identify
-	memset((BYTE *)&access_auth_resp_packet->authidentify, 0, sizeof(access_auth_resp_packet->authidentify));
-	
-	//fill asue rand number
-	memset((BYTE *)&access_auth_resp_packet->asuechallenge, 0, sizeof(access_auth_resp_packet->aechallenge));
-
-	//fill ae rand number
-	memset((BYTE *)&access_auth_resp_packet->aechallenge, 0, sizeof(access_auth_resp_packet->aechallenge));
-
-	//fill ae cipher data
-	memset((BYTE *)&access_auth_resp_packet->aekeydata, 0, sizeof(access_auth_resp_packet->aekeydata));
-
-	//fill access result
-	access_auth_resp_packet->accessresult = 0; // access succeed
-
-	//fill certificate valid result
-	//almost same type and content as certificate_auth_resp_packet, except addid segment
-
-	//access_auth_resp_packet->cervalidresult
-
-	//fill packet length
-	access_auth_resp_packet->wai_packet_head.length = sizeof(access_auth_resp); 
-
-	//fill ae signature
-	//AE\u4f7f\u7528AE\u7684\u79c1\u94a5(userkey2.pem)\u6765\u751f\u6210AE\u7b7e\u540d
-	EVP_PKEY * privKey;
-	BYTE sign_value[1024];					//保存签名值的数组
-	unsigned int  sign_len;
-
-	privKey = getprivkeyfromprivkeyfile(user_ID);
-	if(privKey == NULL)
-	{
-		printf("getprivkeyitsself().....failed!\n");
-		return FALSE;
-	}
-
-	if(!gen_sign(user_ID, (BYTE *)access_auth_resp_packet,(access_auth_resp_packet->wai_packet_head.length-sizeof(access_auth_resp_packet->aesign)),sign_value, &sign_len,privKey))
-	{
-		printf("generate signature failed.\n");
-		return FALSE;
-	}
-
-	
-	return TRUE;
-}
-
-int ProcessWAPIProtocolAccessAuthResp(int user_ID, access_auth_resp *access_auth_resp_packet)
-{
-	memset((BYTE *)access_auth_resp_packet, 0, sizeof(access_auth_resp));
-	if (!fill_access_auth_resp_packet(user_ID, access_auth_resp_packet)){
-		printf("fill access auth responce packet failed!\n");
-		return FALSE;
-	}
-	
-	return TRUE;
-}
-*/
-
-int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_requ_packet,access_auth_resp *access_auth_resp_packet)
+// 5) Handle AccessAuthResp packet
+int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access_auth_requ_packet, const access_auth_resp *access_auth_resp_packet)
 {
 	//verify sign of AE
 	printf("verify sign of AE:\n");
@@ -838,5 +674,15 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, access_auth_requ *access_auth_
 	return TRUE;
 }
 
+/* Key negotiation */
+/*
+// 1) Handle Unicast key negotiation request packet
+int HandleUnicastKeyNegoRequest(const unicast_key_nego_requ *unicast_key_nego_requ_packet);
 
+// 2) Process Unicast key negotiation response packet
+int ProcessUnicastKeyNegoResponse(unicast_key_nego_resp *unicast_key_nego_resp_packet);
+
+// 3) Handle Unicast key negotiation confirm packet
+int HandleUnicastKeyNegoConfirm(const unicast_key_nego_confirm *unicast_key_nego_confirm_packet);
+*/
 

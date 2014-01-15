@@ -1,9 +1,10 @@
-#include "asue.h"
+#include "asue_interfaces.h"
 
 
 /* define HOME to be dir for key and cert files... */
 #define HOME "./"
 /* Make these what you want for cert & key files */
+const char *CAID = "0";
 #define CACERTF  HOME "cacert/cacert.pem"
 #define CAKEYF  HOME "demoCA/private/cakey.pem"
 #define CLIENTCERTF  HOME "cert/usercert1.pem"
@@ -13,32 +14,20 @@
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }/* define HOME to be dir for key and cert files... */
-#define HOME "./"
-/* Make these what you want for cert & key files */
-#define CACERTF  HOME "cacert/cacert.pem"
-#define CAKEYF  HOME "demoCA/private/cakey.pem"
-#define CLIENTCERTF  HOME "cert/usercert1.pem"
-#define CLIENTKEYF  HOME "private/userkey1.pem"
-//#define PrivKey_PWD 111111
-
-#define CHK_NULL(x) if ((x)==NULL) exit (1)
-#define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
-#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
 
-
-BOOL getCertData(int userID, BYTE buf[], int *len)
+BOOL getCertData(char *userID, BYTE buf[], int *len)
 {
 	FILE *fp;
 	char certname[40];
 	memset(certname, '\0', sizeof(certname));//初始化certname,以免后面写如乱码到文件中
 
-	if (userID == 0)
+	if (strcmp(userID, CAID) == 0)
 		//sprintf(certname, "./demoCA/cacert.pem");//./demoCA/
 		sprintf(certname, "./cacert/cacert.pem");//./demoCA/
 	else
 		//sprintf(certname, "./demoCA/newcerts/usercert%d.pem", certnum);  //终端运行./client
-		sprintf(certname, "./cert/usercert%d.pem", userID);                //eclipse调试或运行
+		sprintf(certname, "./cert/usercert%s.pem", userID);                //eclipse调试或运行
 
 	printf("  cert file name: %s\n", certname);
 
@@ -56,18 +45,18 @@ BOOL getCertData(int userID, BYTE buf[], int *len)
 	return TRUE;
 }
 
-BOOL writeCertFile(int userID, BYTE buf[], int len)
+BOOL writeCertFile(char *userID, BYTE buf[], int len)
 {
 	FILE *fp;
 	char certname[40];
 	memset(certname, '\0', sizeof(certname));//初始化certname,以免后面写如乱码到文件中
 
-	if (userID == 0)
+	if (strcmp(userID, CAID) == 0)
 		//sprintf(certname, "./demoCA/cacert.pem");//./demoCA/
 		sprintf(certname, "./cacert/cacert.pem");//./demoCA/
 	else
 		//sprintf(certname, "./demoCA/newcerts/usercert%d.pem", certnum);  //终端运行./client
-		sprintf(certname, "./cert/usercert%d.pem", userID);                //eclipse调试或运行
+		sprintf(certname, "./cert/usercert%s.pem", userID);                //eclipse调试或运行
 
 	printf("  cert file name: %s\n", certname);
 
@@ -97,7 +86,7 @@ Return:      // EVP_PKEY *pubKey
 Others:      // 用户证书的用户名certnum最好是用字符串形式，但是目前是int值，有待改进
 
 *************************************************/
-EVP_PKEY *getpubkeyfromcert(int certnum)
+EVP_PKEY *getpubkeyfromcert(char *userID)
 {
 	EVP_PKEY *pubKey;
 
@@ -107,10 +96,10 @@ EVP_PKEY *getpubkeyfromcert(int certnum)
 
 	char certname[60];
 	memset(certname, '\0', sizeof(certname)); //初始化certname,以免后面写如乱码到文件中
-	if (certnum == 0)
+	if (strcmp(userID, CAID) == 0)
 		sprintf(certname, "./cacert/cacert.pem"); //./demoCA/
 	else
-		sprintf(certname, "./cert/usercert%d.pem", certnum);
+		sprintf(certname, "./cert/usercert%s.pem", userID);
 
 	BIO_read_filename(key,certname);
 	if (!PEM_read_bio_X509(key, &Cert, 0, NULL))
@@ -126,7 +115,7 @@ EVP_PKEY *getpubkeyfromcert(int certnum)
 	return pubKey;
 }
 
-BOOL gen_sign(int user_ID, BYTE * input,int inputLength,BYTE * sign_value, unsigned int *sign_len,EVP_PKEY * privKey)
+BOOL gen_sign(BYTE * input,int inputLength,BYTE * sign_value, unsigned int *sign_len,EVP_PKEY * privKey)
 {
 	EVP_MD_CTX mdctx;						//摘要算法上下文变量
 
@@ -256,7 +245,7 @@ void gen_randnum(BYTE *randnum,int randnum_len)
 }
 
 
-EVP_PKEY * getprivkeyfromprivkeyfile(int userID)
+EVP_PKEY * getprivkeyfromprivkeyfile(char *userID)
 {
 	EVP_PKEY * privKey;
 	FILE* fp;
@@ -264,10 +253,10 @@ EVP_PKEY * getprivkeyfromprivkeyfile(int userID)
 	RSA* rsa;
 	char keyname[40];
 
-	if (userID == 0)
+	if (strcmp(userID, CAID) == 0)
 		sprintf(keyname, "./private/cakey.pem");//./demoCA/
 	else
-		sprintf(keyname, "./private/userkey%d.pem", userID);                //eclipse调试或运行
+		sprintf(keyname, "./private/userkey%s.pem", userID);                //eclipse调试或运行
 	fp = fopen(keyname, "r");
 
 	printf("  key file name: %s\n", keyname);
@@ -326,7 +315,7 @@ int getECDHparam(ecdh_param *ecdhparam, const char *oid)
 	return TRUE;
 }
 
-int getLocalIdentity(identity *localIdentity, int localUserID)
+int getLocalIdentity(identity *localIdentity, char *localUserID)
 {
 	BIO *b=NULL;    //bio\u63a5\u53e3
 	X509 *local_cert=NULL;  //X509\u683c\u5f0f\u670d\u52a1\u7aef\u8bc1\u4e66
@@ -340,12 +329,12 @@ int getLocalIdentity(identity *localIdentity, int localUserID)
 	char certname[40];
 	memset(certname, '\0', sizeof(certname));//初始化certname,以免后面写如乱码到文件中
 
-	if (localUserID == 0)
+	if (strcmp(localUserID, CAID) == 0)
 		//sprintf(certname, "./demoCA/cacert.pem");//./demoCA/
 		sprintf(certname, "./cacert/cacert.pem");//./demoCA/
 	else
 		//sprintf(certname, "./demoCA/newcerts/usercert%d.pem", certnum);  //终端运行./client
-		sprintf(certname, "./cert/usercert%d.pem", localUserID);                //eclipse调试或运行
+		sprintf(certname, "./cert/usercert%s.pem", localUserID);                //eclipse调试或运行
 
 	printf("cert file name: %s\n", certname);
 
@@ -392,11 +381,11 @@ int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buff
 
 /* Authentication */
 // 1) Handle AuthActive packet
-int HandleWAPIProtocolAuthActive(int user_ID, const auth_active *auth_active_packet)
+int HandleWAPIProtocolAuthActive(char *userID, const auth_active *auth_active_packet)
 {
 	//write ae cert into cert file
 	printf("write ae cert into cert file:\n");
-	int ae_ID = 2;
+	char *ae_ID = "2";
 	writeCertFile(ae_ID, (BYTE *)auth_active_packet->certificatestaae.cer_X509, (int)auth_active_packet->certificatestaae.cer_length);
 
 	//verify sign of AE
@@ -443,7 +432,7 @@ int HandleWAPIProtocolAuthActive(int user_ID, const auth_active *auth_active_pac
 }
 
 // 2) Process AccessAuthRequest packet
-int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
+int fill_access_auth_requ_packet(char *userID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
 {
 	//fill WAI packet head
 	printf("fill WAI packet head:\n");
@@ -477,7 +466,7 @@ int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_pack
 
 	//fill ae identity
 	printf("fill ae identity:\n");
-	int ae_ID = 2;
+	char *ae_ID = "2";
 	getLocalIdentity(&access_auth_requ_packet->staaeidentity, ae_ID);
 
 	//fill ecdh param, same as auth active packet
@@ -492,7 +481,7 @@ int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_pack
 	BYTE cert_buffer[5000];
 	int cert_len = 0;
 
-	if (!getCertData(user_ID, cert_buffer, &cert_len))	  //先读取ASUE证书，"demoCA/newcerts/usercert2.pem"
+	if (!getCertData(userID, cert_buffer, &cert_len))	  //先读取ASUE证书，"demoCA/newcerts/usercert2.pem"
 	{
 		printf("将证书保存到缓存buffer失败!");
 		return FALSE;
@@ -513,14 +502,14 @@ int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_pack
 	BYTE sign_value[1024];					//保存签名值的数组
 	unsigned int  sign_len;
 
-	privKey = getprivkeyfromprivkeyfile(user_ID);
+	privKey = getprivkeyfromprivkeyfile(userID);
 	if(privKey == NULL)
 	{
 		printf("getprivkeyitsself().....failed!\n");
 		return FALSE;
 	}
 
-	if(!gen_sign(user_ID, (BYTE *)access_auth_requ_packet,(access_auth_requ_packet->wai_packet_head.length-sizeof(access_auth_requ_packet->asuesign)),sign_value, &sign_len,privKey))
+	if(!gen_sign((BYTE *)access_auth_requ_packet,(access_auth_requ_packet->wai_packet_head.length-sizeof(access_auth_requ_packet->asuesign)),sign_value, &sign_len,privKey))
 	{
 		printf("generate signature failed.\n");
 		return FALSE;
@@ -533,10 +522,10 @@ int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_pack
 	
 }
 
-int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
+int ProcessWAPIProtocolAccessAuthRequest(char *userID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet)
 {
 	memset((BYTE *)access_auth_requ_packet, 0, sizeof(access_auth_requ));
-	if (!fill_access_auth_requ_packet(user_ID,auth_active_packet, access_auth_requ_packet)){
+	if (!fill_access_auth_requ_packet(userID,auth_active_packet, access_auth_requ_packet)){
 		printf("fill access auth request packet failed!\n");
 	}
 
@@ -550,7 +539,7 @@ int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_act
 //int ProcessWAPIProtocolCertAuthResp()
 
 // 5) Handle AccessAuthResp packet
-int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access_auth_requ_packet, const access_auth_resp *access_auth_resp_packet)
+int HandleWAPIProtocolAccessAuthResp(char *userID, const access_auth_requ *access_auth_requ_packet, const access_auth_resp *access_auth_resp_packet)
 {
 	//verify sign of AE
 	printf("verify sign of AE:\n");
@@ -559,7 +548,7 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access
 	BYTE *pTmp = NULL;
 	BYTE deraepubkey[1024];
 	int aepubkeyLen, i;
-	int ae_ID = 2;
+	char *ae_ID = "2";
 	aepubKey = getpubkeyfromcert(ae_ID);
 	if(aepubKey == NULL){
 		printf("get ae's public key failed.\n");
@@ -629,7 +618,7 @@ int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access
 	//BYTE *pTmp = NULL;
 	BYTE derasupubkey[1024];
 	int asupubkeyLen;
-	int asu_ID = 0;
+	char *asu_ID = "0";
 	asupubKey = getpubkeyfromcert(asu_ID);
 
 	pTmp = derasupubkey;

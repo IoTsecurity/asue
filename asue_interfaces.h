@@ -329,9 +329,9 @@ typedef struct _EAP_access_auth_resp
 
 
 
-BOOL getCertData(int userID, BYTE buf[], int *len);
+BOOL getCertData(char *userID, BYTE buf[], int *len);
 
-BOOL writeCertFile(int userID, BYTE buf[], int len);
+BOOL writeCertFile(char *userID, BYTE buf[], int len);
 /*************************************************
 
 Function:    // getpubkeyfromcert
@@ -344,9 +344,9 @@ Return:      // EVP_PKEY *pubKey
 Others:      // 用户证书的用户名certnum最好是用字符串形式，但是目前是int值，有待改进
 
 *************************************************/
-EVP_PKEY *getpubkeyfromcert(int certnum);
+EVP_PKEY *getpubkeyfromcert(char *userID);
 
-BOOL gen_sign(int user_ID, BYTE * input,int inputLength,BYTE * sign_value, unsigned int *sign_len,EVP_PKEY * privKey);
+BOOL gen_sign(BYTE * input,int inputLength,BYTE * sign_value, unsigned int *sign_len,EVP_PKEY * privKey);
 
 /*************************************************
 
@@ -383,23 +383,39 @@ Others:      //
 void gen_randnum(BYTE *randnum,int randnum_len);
 
 
-EVP_PKEY * getprivkeyfromprivkeyfile(int userID);
+EVP_PKEY * getprivkeyfromprivkeyfile(char *userID);
 
 
 int getECDHparam(ecdh_param *ecdhparam, const char *oid);
 
-int getLocalIdentity(identity *localIdentity, int localUserID);
+int getLocalIdentity(identity *localIdentity, char *localUserID);
 
 int par_certificate_auth_resp_packet(certificate_auth_requ * cert_auth_resp_buffer_recv);
 
-int fill_access_auth_requ_packet(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+int fill_access_auth_requ_packet(char *userID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+
+/* Register */
+typedef struct registerContext
+{
+	char *self_password;
+
+	// id identifies certain digital certificates
+	char *radius_id; // id of radius server
+	char *partner_id;
+	char *myself_id;
+
+	// master key
+
+	// key block
+
+}registerContext;
 
 /* Authentication */
 // 1) Handle AuthActive packet
-int HandleWAPIProtocolAuthActive(int user_ID, const auth_active *auth_active_packet);
+int HandleWAPIProtocolAuthActive(char *userID, const auth_active *auth_active_packet);
 
 // 2) Process AccessAuthRequest packet
-int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
+int ProcessWAPIProtocolAccessAuthRequest(char *userID, const auth_active *auth_active_packet, access_auth_requ *access_auth_requ_packet);
 
 
 //3) CertAuthRequest packet sended from ae to asu, asue need do nothing
@@ -409,7 +425,7 @@ int ProcessWAPIProtocolAccessAuthRequest(int user_ID,const auth_active *auth_act
 //int ProcessWAPIProtocolCertAuthResp()
 
 // 5) Handle AccessAuthResp packet
-int HandleWAPIProtocolAccessAuthResp(int user_ID, const access_auth_requ *access_auth_requ_packet,const access_auth_resp *access_auth_resp_packet);
+int HandleWAPIProtocolAccessAuthResp(char *userID, const access_auth_requ *access_auth_requ_packet,const access_auth_resp *access_auth_resp_packet);
 
 /* Key negotiation */
 /*

@@ -9,12 +9,7 @@
  */
 #include "asue_interfaces.h"
 
-
-
-
-
 char *AE_ip_addr;
-
 
 int connect_to_ae()
 {
@@ -114,7 +109,7 @@ int recv_from_ae(int client_socket, BYTE *recv_buffer, int recv_len)
 
 void ProcessWAPIProtocol(int new_ae_socket)
 {
-	int user_ID = 1;
+	char *user_ID = "1";
 
 	EAP_auth_active eap_auth_active_packet;
 	EAP_access_auth_requ eap_access_auth_requ_packet;

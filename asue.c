@@ -8,6 +8,7 @@
  ============================================================================
  */
 #include "asue_interfaces.h"
+#include "logtest.h"
 
 char *AE_ip_addr;
 
@@ -156,7 +157,7 @@ void ProcessWAPIProtocol(int new_ae_socket)
 		printf("Authentication failed!!\n");
 		exit(1);
 	}else{
-		exit(0);
+		return 0;
 	}
 
 }
@@ -178,7 +179,10 @@ int main(int argc, char **argv)
 
 	new_ae_socket = connect_to_ae();
 	
+	Testmode = 1;
+	tick();
 	ProcessWAPIProtocol(new_ae_socket);
+	tock();
 
 	return 0;
 }

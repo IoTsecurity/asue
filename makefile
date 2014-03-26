@@ -12,13 +12,13 @@ all: $(EXE)
 LIB_DIR := -L/usr/local/openssl/lib
 LIBS := -lssl -lcrypto
 OBJS := ./asue.o ./asue_interfaces.o
-USER_OBJS := 
+USER_OBJS := ./logtest.o
 
 # Tool invocations
 $(EXE): $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	$(C_COMPILER) -ldl $(LIB_DIR) $(LIBS) -o $@ $^ $(USER_OBJS) 
+	$(C_COMPILER) -ldl $(LIB_DIR) $(LIBS) -o $@ $^
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -34,7 +34,7 @@ INCLUDE_DIR := -I/usr/local/openssl/include
 	@echo ' '
 
 clean:
-	-$(RM) $(OBJS) $(EXE)
+	-$(RM) $(OBJS) $(USER_OBJS) $(EXE)
 	-@echo ' '
 
 .SECONDARY:

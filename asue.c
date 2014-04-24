@@ -156,10 +156,7 @@ void ProcessWAPIProtocol(int new_ae_socket)
 	if(HandleWAPIProtocolAccessAuthResp(user_ID, &eap_access_auth_requ_packet.access_auth_requ_packet, &eap_access_auth_resp_packet.access_auth_resp_packet) == FALSE){
 		printf("Authentication failed!!\n");
 		exit(1);
-	}else{
-		return 0;
 	}
-
 }
 
 int main(int argc, char **argv)
